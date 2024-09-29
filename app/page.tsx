@@ -1,37 +1,96 @@
+// part code generate by AI
+"use client"
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from "@/components/ui/command"
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from "@/components/ui/command"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Terminal } from "lucide-react"
+import { useState, useEffect } from "react";
+
+// 这个接口定义了笔记的数据结构
+interface Note {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+}
+
+// 这个函数模拟从外部 API 获取数据
+// 在实际应用中，您应该替换为真实的 API 调用
+async function fetchNotes(): Promise<Note[]> {
+  // 模拟 API 调用延迟
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  return [
+    { id: 1, title: "Work Meeting", content: "Discuss project timeline", category: "Work" },
+    { id: 2, title: "Grocery List", content: "Milk, eggs, bread", category: "Personal" },
+    { id: 3, title: "Deadline Reminder", content: "Submit report by Friday", category: "Work" },
+    { id: 4, title: "Birthday Party", content: "Plan surprise party for mom", category: "Personal" },
+    { id: 5, title: "Urgent Task", content: "Fix critical bug in production", category: "Important" },
+    // ... 更多笔记 ...
+  ];
+}
 
 export default function Home() {
+
+  const [allNotes, setAllNotes] = useState<Note[]>([]);
+  const [filter, setFilter] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
+  const itemsPerPage = 6;
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editedContent, setEditedContent] = useState("");
+
+  useEffect(() => {
+    // 获取笔记数据
+    fetchNotes().then(notes => setAllNotes(notes));
+  }, []);
+
+  useEffect(() => {
+    // 应用筛选和分页
+    let filtered = allNotes;
+    if (filter !== 'All') {
+      filtered = allNotes.filter(note => note.category === filter);
+    }
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setFilteredNotes(filtered.slice(startIndex, endIndex));
+  }, [filter, currentPage, allNotes]);
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
+
+  const totalPages = Math.ceil(
+    (filter === 'All' ? allNotes.length : allNotes.filter(note => note.category === filter).length) / itemsPerPage
+  );
+
+  const handleEdit = (note: Note) => {
+    setEditingId(note.id);
+    setEditedContent(note.content);
+  };
+
+  const handleSave = (id: number) => {
+    setAllNotes(prevNotes =>
+      prevNotes.map(note =>
+        note.id === id ? { ...note, content: editedContent } : note
+      )
+    );
+    setEditingId(null);
+  };
+
   return (
-    <div className="container mx-auto p-4 min-h-screen w-full flex flex-col bg-amber-50">
-      <h1 className="text-4xl font-bold mb-4 text-center">My Notes</h1>
-      <div className="mb-4 flex justify-center">
-        <div className="w-1/4 pr-2 ">
+    <div className="min-h-screen bg-amber-50 flex flex-col w-full">
+      <h1 className="text-center text-4xl font-serif mb-8 text-amber-800 tracking-wide pt-4">
+        My Notes
+      </h1>
+      <div className="mb-4 flex justify-center pr-4 pl-4">
+        <div className="w-1/4 pr-2">
           <Command className="w-full bg-yellow-50">
             <CommandInput placeholder="Type a command or search..." />
             <CommandList>
@@ -44,125 +103,69 @@ export default function Home() {
             </CommandList>
           </Command>
         </div>
-
         <div className="w-3/4 pl-2">
-          <div className="mb-4">
-            <Button variant="outline" className="mr-2">All</Button>
-            <Button variant="outline" className="mr-2">Work</Button>
-            <Button variant="outline" className="mr-2">Personal</Button>
-            <Button variant="outline">Important</Button>
+          <div className="mb-4 bg-yellow-50 rounded-md">
+            {['All', 'Work', 'Personal', 'Important'].map(category => (
+              <Button 
+                key={category}
+                variant="outline" 
+                className={`mr-2 ${filter === category ? 'bg-orange-100' : ''}`}
+                onClick={() => handleFilterChange(category)}
+              >
+                {category}
+              </Button>
+            ))}
           </div>
           
-          <Separator className="my-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
+            {filteredNotes.map(note => (
+              <Card key={note.id} className="bg-yellow-100">
+                <CardHeader>
+                  <CardTitle>{note.title}</CardTitle>
+                  <CardDescription>{note.category}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                {editingId === note.id ? (
+                  <textarea
+                    value={editedContent}
+                    onChange={(e) => setEditedContent(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  />
+                ) : (
+                  <p>{note.content}</p>
+                )}
+                </CardContent>
+                <CardFooter>
+                {editingId === note.id ? (
+                  <Button variant="outline" 
+                  className="border-0 mr-2 text-sm px-3 py-1 rounded-md bg-green-500 hover:bg-green-600 text-white" 
+                  onClick={() => handleSave(note.id)}>Save
+                  </Button>
+                ) : (
+                  <Button variant="outline" 
+                  className="border-0 mr-2 text-sm px-3 py-1 rounded-md border-2 border-blue-500 text-blue-500 hover:bg-blue-100" 
+                  onClick={() => handleEdit(note)}>Edit
+                  </Button>
+                )}
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="bg-yellow-100 w-full h-[300px]">
-              <CardHeader>
-                <CardTitle>Meeting Notes</CardTitle>
-                <CardDescription>Team standup - 2023-04-15</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Discussed project timeline and assigned tasks for the week.</p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Badge>Work</Badge>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </CardFooter>
-            </Card>
-            <Card className="bg-yellow-100 w-full h-[300px]">
-              <CardHeader>
-                <CardTitle>Shopping List</CardTitle>
-                <CardDescription>For weekend grocery run</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="list-disc pl-4">
-                  <li>Milk</li>
-                  <li>Eggs</li>
-                  <li>Bread</li>
-                </ul>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Badge>Personal</Badge>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </CardFooter>
-            </Card>
-            <Card className="bg-yellow-100 w-full h-[300px]">
-              <CardHeader>
-                <CardTitle>Project Ideas</CardTitle>
-                <CardDescription>Brainstorming session - 2023-04-20</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>List of potential new features for our app.</p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Badge>Work</Badge>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </CardFooter>
-            </Card>
-            <Card className="bg-yellow-100 w-full h-[300px]">
-              <CardHeader>
-                <CardTitle>Workout Plan</CardTitle>
-                <CardDescription>Weekly fitness routine</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Monday: Cardio, Tuesday: Strength, Wednesday: Yoga...</p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Badge>Personal</Badge>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </CardFooter>
-            </Card>
-            <Card className="bg-yellow-100 w-full h-[300px]">
-              <CardHeader>
-                <CardTitle>Book Notes</CardTitle>
-                <CardDescription>"The Innovator's Dilemma" by Clayton Christensen</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Key concepts and takeaways from the book.</p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Badge>Personal</Badge>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </CardFooter>
-            </Card>
-            <Card className="bg-yellow-100 w-full h-[300px]">
-              <CardHeader>
-                <CardTitle>Quarterly Goals</CardTitle>
-                <CardDescription>Q2 2023 Objectives</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>1. Launch new product feature 2. Increase user engagement by 20%...</p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Badge>Work</Badge>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </CardFooter>
-            </Card>
+          <div className="mt-4 flex justify-center fixed bottom-4 left-1/2 transform -translate-x-1/2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <Button
+                key={page}
+                variant="outline"
+                className={`mx-1 ${currentPage === page ? 'bg-orange-100' : ''}`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </Button>
+            ))}
           </div>
         </div>
       </div>
-
-      <div className="w-full flex justify-center pb-4 mt-auto">
-        <Pagination>
-        <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">1</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">2</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">3</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
     </div>
-  )
+  );
 }
