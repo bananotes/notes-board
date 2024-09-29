@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Terminal } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Sun, Moon } from "lucide-react"; 
+import { Sun, Moon } from "lucide-react";
 
 // TODO: read from local storage
 interface Note {
@@ -259,19 +259,25 @@ export default function Home() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col w-full pb-16 ${
-      theme === "light" ? "bg-amber-25" : "bg-gray-900"
-    }`}>
-      <h1 className={`text-center text-6xl font-serif mb-2 tracking-wide pt-4 ${
-        theme === "light" ? "text-amber-800" : "text-amber-200"
-      }`}>
+    <div
+      className={`min-h-screen flex flex-col w-full pb-16 ${
+        theme === "light" ? "bg-amber-25" : "bg-gray-900"
+      }`}
+    >
+      <h1
+        className={`text-center text-6xl font-serif mb-2 tracking-wide pt-4 ${
+          theme === "light" ? "text-amber-800" : "text-amber-200"
+        }`}
+      >
         My Notes
       </h1>
       <div className="mb-4 flex justify-center pr-4 pl-4">
         <div className="w-1/6 pr-2">
-          <Command className={`w-full ${
+          <Command
+            className={`w-full ${
               theme === "light" ? "bg-yellow-25" : "bg-gray-800"
-            }`}>
+            }`}
+          >
             <CommandInput
               placeholder="Search notes..."
               value={searchTerm}
