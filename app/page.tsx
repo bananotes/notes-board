@@ -1,17 +1,41 @@
 // part code generate by AI
-"use client"
+"use client";
 import Image from "next/image";
-import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from "@/components/ui/command"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Terminal } from "lucide-react"
+import { Separator } from "@/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "@/components/ui/command";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Terminal } from "lucide-react";
 import { useState, useEffect } from "react";
 
-// 这个接口定义了笔记的数据结构
 interface Note {
   id: number;
   title: string;
@@ -19,26 +43,46 @@ interface Note {
   category: string;
 }
 
-// 这个函数模拟从外部 API 获取数据
-// 在实际应用中，您应该替换为真实的 API 调用
 async function fetchNotes(): Promise<Note[]> {
-  // 模拟 API 调用延迟
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
   return [
-    { id: 1, title: "Work Meeting", content: "Discuss project timeline", category: "Work" },
-    { id: 2, title: "Grocery List", content: "Milk, eggs, bread", category: "Personal" },
-    { id: 3, title: "Deadline Reminder", content: "Submit report by Friday", category: "Work" },
-    { id: 4, title: "Birthday Party", content: "Plan surprise party for mom", category: "Personal" },
-    { id: 5, title: "Urgent Task", content: "Fix critical bug in production", category: "Important" },
-    // ... 更多笔记 ...
+    {
+      id: 1,
+      title: "Work Meeting",
+      content: "Discuss project timeline",
+      category: "Work",
+    },
+    {
+      id: 2,
+      title: "Grocery List",
+      content: "Milk, eggs, bread",
+      category: "Personal",
+    },
+    {
+      id: 3,
+      title: "Deadline Reminder",
+      content: "Submit report by Friday",
+      category: "Work",
+    },
+    {
+      id: 4,
+      title: "Birthday Party",
+      content: "Plan surprise party for mom",
+      category: "Personal",
+    },
+    {
+      id: 5,
+      title: "Urgent Task",
+      content: "Fix critical bug in production",
+      category: "Important",
+    },
   ];
 }
 
 export default function Home() {
-
   const [allNotes, setAllNotes] = useState<Note[]>([]);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const itemsPerPage = 6;
@@ -46,15 +90,15 @@ export default function Home() {
   const [editedContent, setEditedContent] = useState("");
 
   useEffect(() => {
-    // 获取笔记数据
-    fetchNotes().then(notes => setAllNotes(notes));
+    // Get notes data
+    fetchNotes().then((notes) => setAllNotes(notes));
   }, []);
 
   useEffect(() => {
-    // 应用筛选和分页
+    // carry out filter
     let filtered = allNotes;
-    if (filter !== 'All') {
-      filtered = allNotes.filter(note => note.category === filter);
+    if (filter !== "All") {
+      filtered = allNotes.filter((note) => note.category === filter);
     }
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -67,7 +111,10 @@ export default function Home() {
   };
 
   const totalPages = Math.ceil(
-    (filter === 'All' ? allNotes.length : allNotes.filter(note => note.category === filter).length) / itemsPerPage
+    (filter === "All"
+      ? allNotes.length
+      : allNotes.filter((note) => note.category === filter).length) /
+      itemsPerPage
   );
 
   const handleEdit = (note: Note) => {
@@ -76,8 +123,8 @@ export default function Home() {
   };
 
   const handleSave = (id: number) => {
-    setAllNotes(prevNotes =>
-      prevNotes.map(note =>
+    setAllNotes((prevNotes) =>
+      prevNotes.map((note) =>
         note.id === id ? { ...note, content: editedContent } : note
       )
     );
@@ -105,59 +152,65 @@ export default function Home() {
         </div>
         <div className="w-3/4 pl-2">
           <div className="mb-4 bg-yellow-50 rounded-md">
-            {['All', 'Work', 'Personal', 'Important'].map(category => (
-              <Button 
+            {["All", "Work", "Personal", "Important"].map((category) => (
+              <Button
                 key={category}
-                variant="outline" 
-                className={`mr-2 ${filter === category ? 'bg-orange-100' : ''}`}
+                variant="outline"
+                className={`mr-2 ${filter === category ? "bg-orange-100" : ""}`}
                 onClick={() => handleFilterChange(category)}
               >
                 {category}
               </Button>
             ))}
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
-            {filteredNotes.map(note => (
+            {filteredNotes.map((note) => (
               <Card key={note.id} className="bg-yellow-100">
                 <CardHeader>
                   <CardTitle>{note.title}</CardTitle>
                   <CardDescription>{note.category}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                {editingId === note.id ? (
-                  <textarea
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    className="w-full p-2 border rounded"
-                  />
-                ) : (
-                  <p>{note.content}</p>
-                )}
+                  {editingId === note.id ? (
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full p-2 border rounded"
+                    />
+                  ) : (
+                    <p>{note.content}</p>
+                  )}
                 </CardContent>
                 <CardFooter>
-                {editingId === note.id ? (
-                  <Button variant="outline" 
-                  className="border-0 mr-2 text-sm px-3 py-1 rounded-md bg-green-500 hover:bg-green-600 text-white" 
-                  onClick={() => handleSave(note.id)}>Save
-                  </Button>
-                ) : (
-                  <Button variant="outline" 
-                  className="border-0 mr-2 text-sm px-3 py-1 rounded-md border-2 border-blue-500 text-blue-500 hover:bg-blue-100" 
-                  onClick={() => handleEdit(note)}>Edit
-                  </Button>
-                )}
+                  {editingId === note.id ? (
+                    <Button
+                      variant="outline"
+                      className="border-0 mr-2 text-sm px-3 py-1 rounded-md bg-green-500 hover:bg-green-600 text-white"
+                      onClick={() => handleSave(note.id)}
+                    >
+                      Save
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="border-0 mr-2 text-sm px-3 py-1 rounded-md border-2 border-blue-500 text-blue-500 hover:bg-blue-100"
+                      onClick={() => handleEdit(note)}
+                    >
+                      Edit
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}
           </div>
 
           <div className="mt-4 flex justify-center fixed bottom-4 left-1/2 transform -translate-x-1/2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <Button
                 key={page}
                 variant="outline"
-                className={`mx-1 ${currentPage === page ? 'bg-orange-100' : ''}`}
+                className={`mx-1 ${currentPage === page ? "bg-stone-100" : ""}`}
                 onClick={() => setCurrentPage(page)}
               >
                 {page}
